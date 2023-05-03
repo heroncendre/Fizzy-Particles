@@ -14,21 +14,21 @@ export class Debug {
 
         this.ui = null
         this.stats = null
-        
+
         if (this.active) {
             this.init()
         }
     }
-    
+
     init() {
         this.app = new App()
-        
+
         this.ui = new dat.GUI({
             width: 350
         })
 
-        this.ui.close()
-        
+        // this.ui.close()
+
         this.stats = new Stats()
         // document.body.appendChild(this.stats.dom)
 
@@ -41,11 +41,11 @@ export class Debug {
             this.stats.update()
         }
     }
-    
+
     beforeUpdateHandler() {
         this.stats.begin()
     }
-    
+
     afterUpdateHandler() {
         this.stats.end()
     }
@@ -59,7 +59,7 @@ export class Debug {
 
         this.ui.destroy()
         this.ui = null
-        
+
         this.stats.dom.parentElement.removeChild(this.stats.dom)
         this.stats = null
 

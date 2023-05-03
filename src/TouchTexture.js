@@ -17,6 +17,8 @@ export class TouchTexture {
         this.rampDuration = 0
         this.rampTime = 0
 
+        this.touchRect = null
+
         this.pointerMoveHandlerBound = this.pointerMoveHandler.bind(this)
 
         this.init()
@@ -29,9 +31,33 @@ export class TouchTexture {
         this.canvas.width = this.canvas.height = this.size
         this.canvas.style.width = this.canvas.style.height = this.size + 'px'
 
-        // Debug
+        this.touchRect = {
+            x: 0,
+            y: 0,
+            width: this.app.canvas.width,
+            height: this.app.canvas.height
+        }
+
         if (this.app.debug.active === true) {
-            document.body.appendChild(this.canvas)
+            const guiFTouch = this.app.debug.ui.addFolder("Touch Rect")
+            guiFTouch.add(this.touchRect, 'x').min(0).max(this.app.canvas.width).step(1).listen()
+            guiFTouch.add(this.touchRect, 'y').min(0).max(this.app.canvas.height).step(1)
+            guiFTouch.add(this.touchRect, 'width').min(0).max(this.app.canvas.width).step(1)
+            guiFTouch.add(this.touchRect, 'height').min(0).max(this.app.canvas.height).step(1)
+
+            const touchP = {
+                centerX : () => {
+                    this.touchRect.x = (this.app.canvas.width - this.touchRect.width) / 2
+                    console.log(this.touchRect.x)
+                }
+            }
+            guiFTouch.add(touchP, 'centerX')
+
+        }
+
+
+        if (this.app.debug.active === true) {
+            document.body.insertBefore(this.canvas, document.body.firstChild);
             this.canvas.style.position = "fixed"
             this.canvas.style.left = 300
             this.canvas.style.top = 700
@@ -45,6 +71,38 @@ export class TouchTexture {
         this.texture = new THREE.CanvasTexture(this.canvas)
 
         this.addEventHandlers()
+
+        // Overlay to adjust rect boundaries
+        if (this.app.debug.active === true) {
+            this.overlay = document.createElement('canvas')
+
+            document.body.insertBefore(this.overlay, document.body.firstChild);
+            this.overlay.style.position = "fixed"
+            this.overlay.style.left = '0px'
+            this.overlay.style.top = '0px'
+            this.overlay.style.zIndex = 999
+            this.overlay.style.pointerEvents = "none"
+
+            this.updateOverlay()
+        }
+    }
+
+    updateOverlay() {
+        this.overlay.style.left = this.touchRect.x + 'px'
+        this.overlay.style.top = this.touchRect.y + 'px'
+
+        this.overlay.width = this.touchRect.width
+        this.overlay.height = this.touchRect.height
+        this.overlay.style.width = this.touchRect.width + 'px'
+        this.overlay.style.height = this.touchRect.height + 'px'
+
+        this.overlayCtx = this.overlay.getContext('2d')
+        this.overlayCtx.fillStyle = "rgba(200, 20, 200, 0.4)"
+        this.overlayCtx.fillRect(0, 0, this.touchRect.width, this.touchRect.height)
+    }
+
+    setTouchRect(x, y, width, height) {
+        this.touchRect = {x, y, width, height}
     }
 
     addEventHandlers() {
@@ -68,8 +126,13 @@ export class TouchTexture {
         }
 
         const r = event.target.getBoundingClientRect()
-        const x = (((source.clientX - r.x) / r.width - 0.5) * this.app.renderSize.aspect) + 0.5
-        const y = (source.clientY - r.y) / r.height
+        // const x = (((source.clientX - r.x) / r.width - 0.5) * this.app.renderSize.aspect) + 0.5
+        // const y = (source.clientY - r.y) / r.height
+
+        const x = (source.clientX - this.touchRect.x) / this.touchRect.width
+        const y = (source.clientY - this.touchRect.y) / this.touchRect.height
+
+        // this.touchRect.x
 
         this.addPoint(new THREE.Vector2(x, y))
     }
@@ -78,6 +141,10 @@ export class TouchTexture {
     addPoint(uv) {
         const pt = new THREE.Vector2(uv.x, uv.y).multiplyScalar(this.size)
         this.points.push({x: pt.x, y: pt.y, ttl: this.ttl, power:1})
+
+        // if (this.app.debug.active === true) {
+        //     console.log("Pt: " + uv.x + ", " + uv.y)
+        // }
     }
 
     drawPoint(pt) {
@@ -134,6 +201,10 @@ export class TouchTexture {
         }
 
         this.texture.needsUpdate = true
+
+        if (this.app.debug.active === true) {
+            this.updateOverlay()
+        }
     }
 
     destroy() {
@@ -147,6 +218,7 @@ export class TouchTexture {
             this.texture = null
         }
 
+        this.touchRect = null
         this.ctx = null
         this.canvas = null
         this.app = null
