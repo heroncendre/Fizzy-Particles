@@ -32,7 +32,7 @@ export class App extends EventEmitter {
         instance = this
         
         this.canvas = canvas
-        
+
         this.animationLoop = null
         this.renderSize = null
         this.camera = null
@@ -72,9 +72,7 @@ export class App extends EventEmitter {
         this.renderSize.on('resize', this.resizeHandlerBound)
         
         this.initWebGL()
-        
-        this.touchTexture = new TouchTexture()
-        
+                
         this.assetManager = new AssetManager(assets)
         this.assetManager.on('ready', this.assetManagerReadyHandlerBound)
         this.assetManager.startLoading()
@@ -87,6 +85,8 @@ export class App extends EventEmitter {
     assetManagerReadyHandler(info) {
         this.images = this.assetManager.getItemNamesOfType('texture')
         const image = this.assetManager.getItem(this.images[0])
+
+        this.touchTexture = new TouchTexture(image)
 
         this.animationLoop.start()
 
@@ -159,6 +159,15 @@ export class App extends EventEmitter {
         
         // Update debug
         this.debug.update()
+
+        const ts = Date.now() / 1000
+        const imageIdx = Math.floor((ts / 10) % this.images.length)
+        if (imageIdx !== this.imageIndex) {
+            this.imageIndex = imageIdx
+            const image = this.assetManager.getItem(this.images[this.imageIndex])
+            this.loadImage(image)
+            this.touchTexture.updateWithImage(image)
+        }
 
         this.trigger('afterUpdate')
     }

@@ -5,23 +5,28 @@ export default [
         path: 'textures/fox.jpg'
     },
     {
-        name: 'lion',
+        name: 'einstein',
         type: 'Texture',
-        path: 'textures/lion.jpg'
+        path: 'textures/einstein.jpg'
+    },
+    {
+        name: 'dog',
+        type: 'Texture',
+        path: 'textures/dog.jpg'
+    },
+    {
+        name: 'ara',
+        type: 'Texture',
+        path: 'textures/ara.jpg'
+    },
+    {
+        name: 'cupcake',
+        type: 'Texture',
+        path: 'textures/cupcake.jpg'
     },
     {
         name: 'city',
         type: 'Texture',
         path: 'textures/city.jpg'
-    },
-    {
-        name: 'he',
-        type: 'Texture',
-        path: 'textures/he.jpg'
-    },
-    {
-        name: 'she',
-        type: 'Texture',
-        path: 'textures/she.jpg'
     }
 ]

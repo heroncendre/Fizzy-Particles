@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import { App } from './App'
 
 export class TouchTexture {
-    constructor() {
+    constructor(image) {
         this.app = null
 
         this.ttl = 2 // s
@@ -21,22 +21,17 @@ export class TouchTexture {
 
         this.pointerMoveHandlerBound = this.pointerMoveHandler.bind(this)
 
-        this.init()
+        this.init(image)
     }
 
-    init() {
+    init(image) {
         this.app = new App()
 
         this.canvas = document.createElement('canvas')
         this.canvas.width = this.canvas.height = this.size
         this.canvas.style.width = this.canvas.style.height = this.size + 'px'
 
-        this.touchRect = {
-            x: 0,
-            y: 0,
-            width: this.app.canvas.width,
-            height: this.app.canvas.height
-        }
+        this.updateTouchArea(image.image.width, image.image.height)
 
         if (this.app.debug.active === true) {
             const guiFTouch = this.app.debug.ui.addFolder("Touch Rect")
@@ -83,11 +78,30 @@ export class TouchTexture {
             this.overlay.style.zIndex = 999
             this.overlay.style.pointerEvents = "none"
 
-            this.updateOverlay()
+            this.updateDebugOverlay()
         }
     }
 
-    updateOverlay() {
+    updateWithImage(image) {
+        this.updateTouchArea(image.image.width, image.image.height)
+    }
+
+    updateTouchArea(width, height) {
+        if (this.app.canvas === null) {
+            return
+        }
+
+        const touchWidth = this.app.canvas.height * width / height
+        
+        this.touchRect = {
+            x: (this.app.canvas.width - touchWidth) / 2,
+            y: 0,
+            width: touchWidth,
+            height: this.app.canvas.height
+        }
+    }
+
+    updateDebugOverlay() {
         this.overlay.style.left = this.touchRect.x + 'px'
         this.overlay.style.top = this.touchRect.y + 'px'
 
@@ -136,7 +150,6 @@ export class TouchTexture {
 
         this.addPoint(new THREE.Vector2(x, y))
     }
-
 
     addPoint(uv) {
         const pt = new THREE.Vector2(uv.x, uv.y).multiplyScalar(this.size)
@@ -203,7 +216,7 @@ export class TouchTexture {
         this.texture.needsUpdate = true
 
         if (this.app.debug.active === true) {
-            this.updateOverlay()
+            this.updateDebugOverlay()
         }
     }
 
